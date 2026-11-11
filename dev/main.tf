@@ -19,3 +19,11 @@ resource "azurerm_resource_group" "rgg" {
       owner = "bikram"
     }
 }
+
+resource "azurerm_resource_group" "rfgg" {
+    name = "helflo"
+    location = "central india"
+    tags = {
+      owner = "bikram"
+    }
+}
