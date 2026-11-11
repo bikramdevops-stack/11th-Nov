@@ -1,0 +1,128 @@
+trigger:
+ - main
+ - feature/*
+
+pool: mypool
+
+parameters:
+  - name: tfsec
+    displayName: tfsec chalana h?
+    type: boolean
+    default: false
+
+  - name: tflint
+    displayName: tflint chalana h?
+    type: boolean
+    default: false
+
+stages:
+  - stage: tfsec
+    dependsOn: []
+    condition: ${{ parameters.tfsec }}
+    displayName: tfsec
+    jobs:
+      - job: tfsec
+        displayName: tfsec
+        steps:
+        - task: PowerShell@2
+          inputs:
+            targetType: 'inline'
+            script: 'tfsec'
+
+  - stage: tflint
+    dependsOn: []
+    condition: ${{ parameters.tflint }}
+    displayName: tflint
+    jobs:
+      - job: tflint
+        displayName: tflint
+        steps:
+        - task: PowerShell@2
+          inputs:
+            targetType: 'inline'
+            script: 'tflint --recursive --force'
+
+
+  - stage: validate
+    dependsOn: 
+    - tfsec
+    - tflint
+    displayName: validate
+    jobs:
+      - job: validate
+        displayName: validate
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/prod'
+            backendServiceArm: 'devopsservice'
+            backendAzureRmStorageAccountName: 'storagepipeline11'
+            backendAzureRmContainerName: 'mycontainer'
+            backendAzureRmKey: 'prod.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'validate'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/prod'
+
+  - stage: plan
+    dependsOn: validate
+    displayName: plan
+    jobs:
+      - job: plan
+        displayName: plan
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/prod'
+            backendServiceArm: 'devopsservice'
+            backendAzureRmStorageAccountName: 'storagepipeline11'
+            backendAzureRmContainerName: 'mycontainer'
+            backendAzureRmKey: 'prod.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/prod'
+            environmentServiceNameAzureRM: 'devopsservice'
+
+
+  - stage: Approval
+    dependsOn: plan
+    pool: server
+    displayName: Approval
+    jobs:
+      - job: Approval
+        displayName: Approval
+        steps:
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: 'acnsdajc'
+
+  - stage: Apply
+    dependsOn: Approval
+    displayName: Apply
+    jobs:
+      - job: Apply
+        displayName: Apply
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/prod'
+            backendServiceArm: 'devopsservice'
+            backendAzureRmStorageAccountName: 'storagepipeline11'
+            backendAzureRmContainerName: 'mycontainer'
+            backendAzureRmKey: 'prod.tfstate'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/prod'
+            environmentServiceNameAzureRM: 'devopsservice'
