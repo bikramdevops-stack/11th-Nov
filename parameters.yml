@@ -59,16 +59,7 @@ stages:
       - job: validate
         displayName: validate
         steps:
-        - task: PowerShell@2          # <-- debug step here
-          displayName: Debug paths
-          inputs:
-            targetType: 'inline'
-            script: |
-              Write-Host "DefaultWorkingDirectory: $(System.DefaultWorkingDirectory)"
-              Write-Host "Environment parameter: ${{ parameters.environment }}"
-              Get-ChildItem "$(System.DefaultWorkingDirectory)" -Recurse -Depth 2 | Select-Object FullName
-              Test-Path "$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}"
-
+      
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
@@ -77,7 +68,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.environment }}'
             backendServiceArm: 'devopsservice'
             backendAzureRmStorageAccountName: 'storagepipeline11'
             backendAzureRmContainerName: 'mycontainer'
@@ -86,7 +77,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'validate'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.environment }}'
 
   - stage: plan
     dependsOn: validate
@@ -103,7 +94,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.environment }}'
             backendServiceArm: 'devopsservice'
             backendAzureRmStorageAccountName: 'storagepipeline11'
             backendAzureRmContainerName: 'mycontainer'
@@ -112,7 +103,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'plan'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.environment }}'
             environmentServiceNameAzureRM: 'devopsservice'
 
 
@@ -144,7 +135,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.environment }}'
             backendServiceArm: 'devopsservice'
             backendAzureRmStorageAccountName: 'storagepipeline11'
             backendAzureRmContainerName: 'mycontainer'
@@ -154,5 +145,5 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'apply'
-            workingDirectory: '$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.environment }}'
             environmentServiceNameAzureRM: 'devopsservice'
