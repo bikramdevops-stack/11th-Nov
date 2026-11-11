@@ -61,7 +61,7 @@ stages:
         steps:
         - task: TerraformInstaller@1
           inputs:
-            terraformVersion: '1.9.8'
+            terraformVersion: 'latest'
 
         - task: TerraformTask@5
           inputs:
@@ -85,6 +85,10 @@ stages:
       - job: plan
         displayName: plan
         steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
@@ -121,6 +125,10 @@ stages:
       - job: Apply
         displayName: Apply
         steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+
         - task: TerraformTask@5
           inputs:
             provider: 'azurerm'
