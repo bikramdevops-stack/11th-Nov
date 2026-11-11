@@ -27,3 +27,11 @@ resource "azurerm_resource_group" "rfgg" {
       owner = "bikram"
     }
 }
+
+resource "azurerm_resource_group" "rahul" {
+    name = "rahulkaler"
+    location = "central india"
+    tags = {
+      owner = "bikram"
+    }
+}
