@@ -59,6 +59,16 @@ stages:
       - job: validate
         displayName: validate
         steps:
+        - task: PowerShell@2          # <-- debug step here
+          displayName: Debug paths
+          inputs:
+            targetType: 'inline'
+            script: |
+              Write-Host "DefaultWorkingDirectory: $(System.DefaultWorkingDirectory)"
+              Write-Host "Environment parameter: ${{ parameters.environment }}"
+              Get-ChildItem "$(System.DefaultWorkingDirectory)" -Recurse -Depth 2 | Select-Object FullName
+              Test-Path "$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}"
+
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
@@ -125,6 +135,7 @@ stages:
       - job: Apply
         displayName: Apply
         steps:
+        
         - task: TerraformInstaller@1
           inputs:
             terraformVersion: 'latest'
